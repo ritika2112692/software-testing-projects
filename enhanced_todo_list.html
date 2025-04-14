@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Todo List with Login</title>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 30px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ed 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        h2, h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .logout-btn {
+            background-color: #e74c3c;
+        }
+        
+        .logout-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            font-size: 15px;
+        }
+        
+        .error {
+            background-color: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #ef5350;
+        }
+        
+        .success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border-left: 4px solid #66bb6a;
+        }
+        
+        .todo-list {
+            margin-top: 30px;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .todo-list:hover {
+            box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+            transform: translateY(-2px);
+        }
+        
+        .todo-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 12px;
+            background: white;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-left: 4px solid #3498db;
+        }
+        
+        .todo-item:hover {
+            background: #f8f9fa;
+            transform: translateX(5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .todo-item span:hover {
+            cursor: pointer;
+            color: #2980b9;
+            text-decoration: underline;
+            transition: color 0.3s ease;
+        }
+
+        .todo-item span {
+            flex-grow: 1;
+            padding: 0 10px;
+            position: relative;
+        }
+
+        .todo-item span::before {
+            content: "•";
+            color: #3498db;
+            position: absolute;
+            left: -5px;
+        }
+        
+        .todo-item button {
+            padding: 8px 15px;
+            font-size: 14px;
+            background-color: #e74c3c;
+            border-radius: 20px;
+            min-width: 80px;
+            transition: all 0.2s ease;
+        }
+        
+        .todo-item button:hover {
+            background-color: #c0392b;
+            transform: scale(1.05);
+        }
+
+        .todo-item button:active {
+            transform: scale(0.95);
+        }
+        
+        a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 500;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        a:hover {
+            color: #2980b9;
+        }
+
+        a::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background-color: #3498db;
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.3s ease;
+        }
+
+        a:hover::after {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+        
+        small {
+            display: block;
+            margin-top: 4px;
+            color: #7f8c8d;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div id="auth-forms">
+        <div id="login-form">
+            <h2>Login</h2>
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" required>
+            </div>
+            <button onclick="login()">Login</button>
+            <p>Don't have an account? <a href="#" onclick="showSignup()">Sign up</a></p>
+            <div id="login-message" class="message hidden"></div>
+        </div>
+
+        <div id="signup-form" class="hidden">
+            <h2>Sign Up</h2>
+            <div class="form-group">
+                <label for="new-username">Username:</label>
+                <input type="text" id="new-username" required minlength="4">
+                <small>Minimum 4 characters</small>
+            </div>
+            <div class="form-group">
+                <label for="new-password">Password:</label>
+                <input type="password" id="new-password" required minlength="6">
+                <small>Minimum 6 characters</small>
+            </div>
+            <div class="form-group">
+                <label for="confirm-password">Confirm Password:</label>
+                <input type="password" id="confirm-password" required>
+            </div>
+            <button onclick="signup()">Sign Up</button>
+            <p>Already have an account? <a href="#" onclick="showLogin()">Login</a></p>
+            <div id="signup-message" class="message hidden"></div>
+        </div>
+    </div>
+
+    <div id="logged-in-content" class="hidden">
+        <h2>Welcome, <span id="display-username"></span>!</h2>
+        <p>You are successfully logged in.</p>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+
+        <div class="todo-list">
+            <h3>Your Todo List</h3>
+            <div class="form-group">
+                <input type="text" id="todo-input" placeholder="Add a new task" />
+                <button onclick="addTodo()">Add</button>
+            </div>
+            <div id="todos"></div>
+        </div>
+    </div>
+
+    <script>
+        // User database in localStorage
+        const usersDB = JSON.parse(localStorage.getItem('usersDB')) || {};
+
+        // Check if user is already logged in
+        document.addEventListener('DOMContentLoaded', function() {
+            const loggedInUser = localStorage.getItem('loggedInUser');
+            if (loggedInUser) {
+                showLoggedInState(loggedInUser);
+            }
+        });
+
+        function showSignup() {
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('signup-form').classList.remove('hidden');
+        }
+
+        function showLogin() {
+            document.getElementById('signup-form').classList.add('hidden');
+            document.getElementById('login-form').classList.remove('hidden');
+        }
+
+        function validatePassword(password) {
+            if (password.length < 6) {
+                return 'Password must be at least 6 characters';
+            }
+            return '';
+        }
+
+        function signup() {
+            const username = document.getElementById('new-username').value.trim();
+            const password = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            const messageElement = document.getElementById('signup-message');
+
+            // Validation
+            if (!username || !password || !confirmPassword) {
+                showMessage('Please fill all fields', 'error', messageElement);
+                return;
+            }
+
+            if (username.length < 4) {
+                showMessage('Username must be at least 4 characters', 'error', messageElement);
+                return;
+            }
+
+            const passwordError = validatePassword(password);
+            if (passwordError) {
+                showMessage(passwordError, 'error', messageElement);
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showMessage('Passwords do not match', 'error', messageElement);
+                return;
+            }
+
+            if (usersDB[username]) {
+                showMessage('Username already exists', 'error', messageElement);
+                return;
+            }
+
+            // Store user (in real app, passwords should be hashed)
+            usersDB[username] = password;
+            localStorage.setItem('usersDB', JSON.stringify(usersDB));
+            
+            showMessage('Account created successfully! Please login', 'success', messageElement);
+            showLogin();
+        }
+
+        function login() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const messageElement = document.getElementById('login-message');
+
+            // Validation
+            if (!username || !password) {
+                showMessage('Please enter both username and password', 'error', messageElement);
+                return;
+            }
+
+            // Check credentials
+            if (!usersDB[username] || usersDB[username] !== password) {
+                showMessage('Invalid username or password', 'error', messageElement);
+                return;
+            }
+
+            localStorage.setItem('loggedInUser', username);
+            showLoggedInState(username);
+            showMessage('Login successful!', 'success', messageElement);
+        }
+
+        function logout() {
+            localStorage.removeItem('loggedInUser');
+            document.getElementById('login-form').classList.remove('hidden');
+            document.getElementById('logged-in-content').classList.add('hidden');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('todos').innerHTML = ''; // Clear todos on logout
+        }
+
+        function showLoggedInState(username) {
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('logged-in-content').classList.remove('hidden');
+            document.getElementById('display-username').textContent = username;
+            loadTodos(); // Load todos if any
+        }
+
+        function showMessage(message, type, element = null) {
+            const messageElement = element || document.getElementById('login-message');
+            messageElement.textContent = message;
+            messageElement.className = 'message ' + type;
+            messageElement.classList.remove('hidden');
+        }
+
+        function addTodo() {
+            const todoInput = document.getElementById('todo-input');
+            const todoText = todoInput.value.trim();
+            if (!todoText) {
+                showMessage('Please enter a task', 'error');
+                return;
+            }
+
+            const todos = JSON.parse(localStorage.getItem('todos')) || [];
+            todos.push({ text: todoText, completed: false });
+            localStorage.setItem('todos', JSON.stringify(todos));
+            todoInput.value = '';
+            loadTodos();
+        }
+
+        function loadTodos() {
+            const todos = JSON.parse(localStorage.getItem('todos')) || [];
+            const todosContainer = document.getElementById('todos');
+            todosContainer.innerHTML = '';
+            todos.forEach((todo, index) => {
+                const todoItem = document.createElement('div');
+                todoItem.className = 'todo-item';
+                todoItem.innerHTML = `
+                    <input type="checkbox" ${todo.completed ? 'checked' : ''} onchange="toggleCompletion(${index})" />
+                    <span class="${todo.completed ? 'completed' : ''}" ondblclick="editTodo(${index})">${todo.text}</span>
+                    <button onclick="removeTodo(${index})">Remove</button>
+                `;
+                todosContainer.appendChild(todoItem);
+            });
+        }
+
+        function removeTodo(index) {
+            const todos = JSON.parse(localStorage.getItem('todos')) || [];
+            todos.splice(index, 1);
+            localStorage.setItem('todos', JSON.stringify(todos));
+            loadTodos();
+        }
+
+        function toggleCompletion(index) {
+            const todos = JSON.parse(localStorage.getItem('todos')) || [];
+            todos[index].completed = !todos[index].completed;
+            localStorage.setItem('todos', JSON.stringify(todos));
+            loadTodos();
+        }
+
+        function editTodo(index) {
+            const todos = JSON.parse(localStorage.getItem('todos')) || [];
+            const todosContainer = document.getElementById('todos');
+            const todoItem = todosContainer.children[index];
+            const span = todoItem.querySelector('span');
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = todos[index].text;
+            input.className = 'edit-input';
+            input.style.width = '70%';
+
+            input.onblur = function() {
+                const newText = input.value.trim();
+                if (newText) {
+                    todos[index].text = newText;
+                    localStorage.setItem('todos', JSON.stringify(todos));
+                }
+                loadTodos();
+            };
+
+            input.onkeydown = function(e) {
+                if (e.key === 'Enter') {
+                    input.blur();
+                }
+                if (e.key === 'Escape') {
+                    loadTodos();
+                }
+            };
+
+            todoItem.replaceChild(input, span);
+            input.focus();
+        }
+    </script>
+    <style>
+        .completed {
+            text-decoration: line-through;
+            color: #7f8c8d;
+        }
+        .edit-input {
+            font-size: 16px;
+            padding: 6px;
+            border: 1px solid #3498db;
+            border-radius: 4px;
+        }
+    </style>
+</body>
+</html>

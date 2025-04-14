@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login System</title>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 400px;
+            margin: 40px auto;
+            padding: 30px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ed 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            animation: fadeIn 0.5s ease-out;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .logout-btn {
+            background-color: #e74c3c;
+        }
+
+        .logout-btn:hover {
+            background-color: #c0392b;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            font-size: 15px;
+        }
+
+        .error {
+            background-color: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #ef5350;
+        }
+
+        .success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border-left: 4px solid #66bb6a;
+        }
+    </style>
+</head>
+<body>
+    <div id="login-form">
+        <h2>Login</h2>
+        <div class="form-group">
+            <label for="username">Username:</label>
+            <input type="text" id="username" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" required>
+        </div>
+        <button onclick="login()">Login</button>
+        <div id="login-message" class="message hidden"></div>
+    </div>
+
+    <div id="logged-in-content" class="hidden">
+        <h2>Welcome, <span id="display-username"></span>!</h2>
+        <p>You are successfully logged in.</p>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+
+    <script>
+        // Check if user is already logged in
+        document.addEventListener('DOMContentLoaded', function() {
+            const loggedInUser = localStorage.getItem('loggedInUser');
+            if (loggedInUser) {
+                showLoggedInState(loggedInUser);
+            }
+        });
+
+        function login() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const messageElement = document.getElementById('login-message');
+
+            // Simple validation
+            if (!username || !password) {
+                showMessage('Please enter both username and password', 'error');
+                return;
+            }
+
+            // In a real app, you would verify credentials with a server
+            // For demo purposes, we'll just check non-empty values
+            localStorage.setItem('loggedInUser', username);
+            showLoggedInState(username);
+            showMessage('Login successful!', 'success');
+        }
+
+        function logout() {
+            localStorage.removeItem('loggedInUser');
+            document.getElementById('login-form').classList.remove('hidden');
+            document.getElementById('logged-in-content').classList.add('hidden');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        }
+
+        function showLoggedInState(username) {
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('logged-in-content').classList.remove('hidden');
+            document.getElementById('display-username').textContent = username;
+        }
+
+        function showMessage(message, type) {
+            const messageElement = document.getElementById('login-message');
+            messageElement.textContent = message;
+            messageElement.className = 'message ' + type;
+            messageElement.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
